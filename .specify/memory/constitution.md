@@ -1,50 +1,83 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+# Constitución de Huellitas
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. Propósito y simplicidad
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+Huellitas es una aplicación web para que un refugio pequeño gestione fichas de mascotas en
+adopción. Es un proyecto académico: la prioridad es demostrar el flujo SDD + GitHub (ramas,
+Pull Requests, CI), no la complejidad técnica.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+- Ante dos soluciones válidas, se DEBE elegir la más simple.
+- No se agregan funcionalidades, dependencias ni capas que la especificación no pida (YAGNI).
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+### II. Stack fijo
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+- Monorepo con dos carpetas: `frontend/` y `backend/`.
+- `frontend/`: Angular con componentes standalone, TypeScript en modo estricto y Tailwind CSS.
+- `backend/`: Node.js + Express + Mongoose.
+- Base de datos: MongoDB con una única colección `mascotas`.
+- La conexión DEBE configurarse con la variable de entorno `MONGODB_URI`; nunca en el código.
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+Cambiar el stack requiere enmendar esta constitución.
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+### III. Diseño con personalidad y accesible
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+- Paleta pastel suave: durazno, menta, lavanda y crema.
+- Tipografía redondeada: Nunito o Fredoka.
+- Tarjetas con bordes redondeados y sombras suaves.
+- Microinteracciones discretas: hover con leve elevación o rebote; transiciones de 150–250 ms.
+- La interfaz DEBE tener identidad propia y NO parecer una plantilla genérica.
+- Accesibilidad mínima obligatoria: contraste legible, `label` asociado a cada campo de
+  formulario y foco visible en todo elemento interactivo.
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+### IV. Calidad verificada en CI (NO NEGOCIABLE)
+
+- Toda lógica de negocio DEBE tener prueba unitaria.
+- Pruebas y build se ejecutan en GitHub Actions en cada Pull Request.
+- Ningún cambio entra a `main` con el pipeline en rojo.
+
+### V. Colaboración Trunk Based simplificada
+
+- `main` está protegida; se trabaja en ramas cortas, una por Issue.
+- Todo cambio entra por Pull Request revisado y aprobado por el otro integrante.
+- Cada Pull Request DEBE vincular su Issue (`Closes #n`).
+- Commits en formato Conventional Commits, redactados en español
+  (p. ej. `feat(mascotas): agregar formulario de alta`).
+
+### VI. Seguridad
+
+- Nunca se suben credenciales ni archivos `.env` al repositorio (se versiona solo `.env.example`).
+- La API DEBE validar todas las entradas antes de procesarlas o persistirlas.
+- La API NO expone errores internos (stack traces, mensajes de base de datos) al cliente;
+  responde con mensajes genéricos y códigos HTTP adecuados.
+
+### VII. Especificación como fuente de verdad
+
+Cualquier cambio de requisitos se refleja primero en la especificación (`specs/`) y después en
+el código. Código que contradiga la especificación vigente se considera un defecto.
+
+## Flujo de trabajo SDD
+
+1. Especificar (`/speckit-specify`) y aclarar (`/speckit-clarify`) los requisitos.
+2. Planificar (`/speckit-plan`) y desglosar en tareas (`/speckit-tasks`).
+3. Convertir tareas en Issues; implementar cada una en su rama corta.
+4. Abrir Pull Request vinculado al Issue, pasar CI y obtener revisión antes de fusionar.
+
+## Puertas de calidad del Pull Request
+
+Un Pull Request solo se fusiona si: el pipeline está en verde; tiene aprobación del otro
+integrante; enlaza su Issue; la especificación está actualizada si cambió algún requisito; y no
+incluye secretos ni archivos `.env`.
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+Esta constitución prevalece sobre cualquier otra práctica del proyecto. Toda revisión de Pull
+Request DEBE verificar su cumplimiento, y cualquier complejidad adicional debe justificarse
+explícitamente en el plan.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+Las enmiendas se proponen mediante Pull Request que modifique este archivo, con aprobación de
+ambos integrantes. Versionado semántico: MAJOR para eliminar o redefinir principios, MINOR para
+añadir principios o secciones, PATCH para aclaraciones de redacción.
+
+**Version**: 1.0.0 | **Ratified**: 2026-10-03 | **Last Amended**: 2026-10-03
