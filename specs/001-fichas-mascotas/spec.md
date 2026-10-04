@@ -38,6 +38,7 @@ Un voluntario recibe una mascota nueva en el refugio y quiere dejar su ficha reg
 5. **Dado** que el voluntario está en el formulario de registro, **cuando** no ha elegido nada en el campo estado, **entonces** el estado aparece preseleccionado como "disponible".
 6. **Dado** que el voluntario acaba de abrir el formulario vacío, **cuando** todavía no ha salido de ningún campo ni ha intentado guardar, **entonces** no se muestra ningún mensaje de error, tampoco mientras escribe por primera vez.
 7. **Dado** que el voluntario dejó vacíos el nombre y la edad, **cuando** pulsa "Guardar", **entonces** ambos campos quedan marcados con su mensaje de error y no se envía ningún dato.
+8. **Dado** que el voluntario completó el formulario con datos válidos, **cuando** pulsa "Guardar" y el sistema todavía está guardando, **entonces** se muestra un indicador de carga visible y el botón "Guardar" queda deshabilitado hasta que termina, de modo que volver a pulsarlo no registra la mascota dos veces.
 
 ---
 
@@ -187,6 +188,10 @@ Al abrir la aplicación, el personal ve una bienvenida breve y dos contadores: c
 - **FR-031**: La aplicación DEBE poder usarse por completo en navegadores de celular, tablet y escritorio, sin desplazamiento horizontal desde 360 px de ancho de pantalla. El diseño DEBE pensarse primero para celular.
 - **FR-032**: En pantallas de celular, las tarjetas del listado DEBEN mostrarse en una sola columna. En pantallas más grandes (tablet y escritorio), DEBEN distribuirse en una cuadrícula de 2 a 3 columnas según el ancho disponible.
 - **FR-033**: Los filtros, botones y demás elementos interactivos DEBEN ser cómodos de usar al tacto, con un área táctil mínima de 44 × 44 px.
+
+**Indicador de carga**
+
+- **FR-034**: Mientras el sistema consulta o guarda datos, DEBE mostrarse un indicador de carga visible, y los botones de guardar y eliminar DEBEN deshabilitarse para evitar envíos duplicados.
 
 ### Entidades clave
 
