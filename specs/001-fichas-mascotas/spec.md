@@ -8,6 +8,15 @@
 
 **Entrada**: Descripción del usuario: "Huellitas: gestión de fichas de mascotas en adopción para un refugio pequeño. El personal del refugio lleva el registro de las mascotas en papel o en chats, pierde información y no sabe rápidamente cuántas mascotas siguen disponibles. Inicio con contadores, listado en tarjetas con filtros, registro y edición mediante formulario, y detalle con acciones de editar, eliminar y marcar como adoptada."
 
+## Aclaraciones
+
+### Sesión 2026-10-04
+
+- P: ¿Cómo se corrige una mascota marcada como "adoptada" por error? → R: Desde el formulario de edición, cuyo campo estado permite volver de "adoptado" a "disponible". No se agrega ningún botón adicional en el detalle.
+- P: ¿En qué dispositivos debe poder usarse cómodamente la aplicación? → R: En celular, tablet y escritorio, con diseño adaptable pensado primero para celular: en celular las tarjetas van en una columna y los filtros y botones son cómodos al tacto; en pantallas más grandes las tarjetas se distribuyen en una cuadrícula de 2 a 3 columnas. No se desarrolla una app nativa.
+- P: Si dos voluntarios editan la misma mascota al mismo tiempo, ¿qué pasa cuando ambos guardan? → R: Gana el último que guarda: sus datos reemplazan a los anteriores. No hay control de concurrencia ni bloqueo de fichas; se acepta por tratarse de un refugio pequeño con pocos usuarios simultáneos.
+- P: ¿En qué momento aparecen los mensajes de validación del formulario? → R: Al salir de un campo que ya fue tocado y al intentar guardar. No se muestran errores al abrir el formulario vacío ni mientras se escribe por primera vez. Al intentar guardar con errores, se marcan todos los campos inválidos y no se envían los datos.
+
 ## Escenarios de usuario y pruebas *(obligatorio)*
 
 **Usuario**: personal o voluntario del refugio. Existe un único rol y no hay inicio de sesión; cualquier persona que use la aplicación puede realizar todas las acciones.
@@ -25,8 +34,10 @@ Un voluntario recibe una mascota nueva en el refugio y quiere dejar su ficha reg
 1. **Dado** que el voluntario está en el formulario de registro, **cuando** ingresa nombre "Luna", especie "gato", edad 2 y guarda, **entonces** la mascota queda registrada con estado "disponible" y se muestra una confirmación breve (p. ej. "Mascota registrada correctamente").
 2. **Dado** que el voluntario está en el formulario de registro, **cuando** deja el nombre vacío e intenta guardar, **entonces** no se registra nada y se muestra junto al campo el mensaje "El nombre es obligatorio".
 3. **Dado** que el voluntario está en el formulario de registro, **cuando** ingresa una edad de -1 o de 31 e intenta guardar, **entonces** no se registra nada y se muestra el mensaje "La edad debe ser un número entero entre 0 y 30".
-4. **Dado** que el voluntario está en el formulario de registro, **cuando** escribe una descripción de más de 200 caracteres, **entonces** se le indica "La descripción no puede superar los 200 caracteres" y no puede guardar hasta corregirla.
+4. **Dado** que el voluntario está en el formulario de registro, **cuando** escribe una descripción de más de 200 caracteres y sale del campo, **entonces** se le indica "La descripción no puede superar los 200 caracteres" y no puede guardar hasta corregirla.
 5. **Dado** que el voluntario está en el formulario de registro, **cuando** no ha elegido nada en el campo estado, **entonces** el estado aparece preseleccionado como "disponible".
+6. **Dado** que el voluntario acaba de abrir el formulario vacío, **cuando** todavía no ha salido de ningún campo ni ha intentado guardar, **entonces** no se muestra ningún mensaje de error, tampoco mientras escribe por primera vez.
+7. **Dado** que el voluntario dejó vacíos el nombre y la edad, **cuando** pulsa "Guardar", **entonces** ambos campos quedan marcados con su mensaje de error y no se envía ningún dato.
 
 ---
 
@@ -83,6 +94,7 @@ El voluntario detecta un dato incorrecto o desactualizado (por ejemplo, la edad 
 2. **Dado** que el voluntario está editando "Luna", **cuando** cambia la edad a 3 y guarda, **entonces** el cambio queda guardado, se muestra una confirmación breve (p. ej. "Cambios guardados") y el detalle muestra la edad 3.
 3. **Dado** que el voluntario está editando, **cuando** borra el nombre e intenta guardar, **entonces** se aplican las mismas validaciones y mensajes que en el registro y no se guarda nada.
 4. **Dado** que el voluntario está editando, **cuando** cancela, **entonces** no se guarda ningún cambio.
+5. **Dado** que "Luna" fue marcada como adoptada por error, **cuando** el voluntario la edita, cambia el estado a "disponible" y guarda, **entonces** su estado vuelve a "disponible", se muestra la confirmación de cambios guardados y los contadores del inicio lo reflejan.
 
 ---
 
@@ -115,6 +127,7 @@ Al abrir la aplicación, el personal ve una bienvenida breve y dos contadores: c
 - **Mascota que ya no existe** (por ejemplo, eliminada por otro voluntario mientras se veía su detalle): al intentar verla, editarla o eliminarla se muestra un mensaje claro ("Esta mascota ya no existe") y se ofrece volver al listado.
 - **Fallo al guardar** (por ejemplo, sin conexión): se muestra un mensaje claro en español indicando que no se pudo completar la acción, sin perder los datos escritos en el formulario y sin mostrar detalles técnicos.
 - **Doble envío**: pulsar "Guardar" varias veces seguidas no debe crear mascotas duplicadas.
+- **Ediciones simultáneas**: si dos voluntarios editan la misma mascota a la vez, se conservan los datos del último que guarda y se descartan, sin aviso, los cambios del otro (ver FR-030).
 
 ## Requisitos *(obligatorio)*
 
@@ -139,13 +152,14 @@ Al abrir la aplicación, el personal ve una bienvenida breve y dos contadores: c
 
 - **FR-010**: El sistema DEBE permitir registrar una mascota mediante un formulario con los campos nombre, especie, edad, estado y descripción.
 - **FR-011**: Al registrar, el estado DEBE venir preseleccionado como "disponible".
-- **FR-012**: El sistema DEBE permitir editar todos los datos de una mascota existente usando el mismo formulario, precargado con los datos actuales.
+- **FR-012**: El sistema DEBE permitir editar todos los datos de una mascota existente usando el mismo formulario, precargado con los datos actuales. El campo estado DEBE poder cambiarse en ambos sentidos (de "disponible" a "adoptado" y de "adoptado" a "disponible"); esta es la única vía para revertir una adopción marcada por error.
 - **FR-013**: El sistema DEBE validar que el nombre sea obligatorio y tenga entre 2 y 40 caracteres, sin contar espacios al inicio o al final.
 - **FR-014**: El sistema DEBE validar que la especie sea una de: perro, gato u otro.
 - **FR-015**: El sistema DEBE validar que la edad sea un número entero entre 0 y 30 años, ambos incluidos; DEBE rechazar edades negativas, decimales o no numéricas.
 - **FR-016**: El sistema DEBE validar que el estado sea "disponible" o "adoptado".
 - **FR-017**: El sistema DEBE aceptar la descripción como opcional con un máximo de 200 caracteres.
 - **FR-018**: Cuando un dato no sea válido, el sistema NO DEBE guardar la mascota y DEBE mostrar un mensaje claro en español junto al campo afectado, indicando cómo corregirlo.
+- **FR-018a**: Los mensajes de validación DEBEN aparecer en dos momentos: al salir de un campo que ya fue tocado, y al intentar guardar. NO DEBEN mostrarse al abrir el formulario vacío ni mientras se escribe por primera vez en un campo. Al intentar guardar con errores, el sistema DEBE marcar todos los campos inválidos a la vez y NO DEBE enviar los datos.
 - **FR-019**: Las mismas reglas de validación DEBEN aplicarse tanto al registrar como al editar, y el sistema DEBE verificarlas antes de guardar, aunque la información se haya enviado sin pasar por el formulario.
 - **FR-020**: El formulario DEBE permitir cancelar sin guardar cambios.
 
@@ -153,7 +167,7 @@ Al abrir la aplicación, el personal ve una bienvenida breve y dos contadores: c
 
 - **FR-021**: El sistema DEBE mostrar el detalle de una mascota con todos sus datos, incluida la descripción si existe.
 - **FR-022**: El detalle DEBE ofrecer las acciones editar, eliminar y marcar como adoptada.
-- **FR-023**: La acción "marcar como adoptada" DEBE cambiar el estado de la mascota a "adoptado" y solo DEBE estar disponible cuando la mascota esté "disponible".
+- **FR-023**: La acción "marcar como adoptada" DEBE cambiar el estado de la mascota a "adoptado" y solo DEBE estar disponible cuando la mascota esté "disponible". El detalle NO DEBE ofrecer una acción para volver a "disponible" (ver FR-012).
 - **FR-024**: Antes de eliminar una mascota, el sistema DEBE pedir confirmación explícita; si el usuario cancela, la mascota NO DEBE eliminarse.
 - **FR-025**: La eliminación DEBE ser definitiva: la mascota deja de aparecer en el listado y en los contadores.
 
@@ -166,6 +180,13 @@ Al abrir la aplicación, el personal ve una bienvenida breve y dos contadores: c
 **Persistencia**
 
 - **FR-029**: Los datos de las mascotas DEBEN conservarse de forma permanente y ser los mismos para todo el personal que use la aplicación, independientemente del dispositivo.
+- **FR-030**: Cuando se guarden cambios sobre una misma mascota desde dos sesiones distintas, DEBE prevalecer el último guardado. El sistema NO DEBE bloquear fichas ni detectar conflictos de edición.
+
+**Adaptación a dispositivos**
+
+- **FR-031**: La aplicación DEBE poder usarse por completo en navegadores de celular, tablet y escritorio, sin desplazamiento horizontal desde 360 px de ancho de pantalla. El diseño DEBE pensarse primero para celular.
+- **FR-032**: En pantallas de celular, las tarjetas del listado DEBEN mostrarse en una sola columna. En pantallas más grandes (tablet y escritorio), DEBEN distribuirse en una cuadrícula de 2 a 3 columnas según el ancho disponible.
+- **FR-033**: Los filtros, botones y demás elementos interactivos DEBEN ser cómodos de usar al tacto, con un área táctil mínima de 44 × 44 px.
 
 ### Entidades clave
 
@@ -189,13 +210,14 @@ Al abrir la aplicación, el personal ve una bienvenida breve y dos contadores: c
 - **SC-006**: Los contadores del inicio coinciden siempre con el número de mascotas disponibles y adoptadas que muestra el listado filtrado por cada estado.
 - **SC-007**: Al menos 9 de cada 10 voluntarios que usan la aplicación por primera vez completan sin ayuda el registro de una mascota y su marcado como adoptada.
 - **SC-008**: Ninguna ficha registrada se pierde: tras cerrar y volver a abrir la aplicación, o al abrirla desde otro dispositivo, aparecen las mismas mascotas.
+- **SC-009**: Todas las pantallas (inicio, listado, detalle y formulario) pueden usarse por completo en un celular de 360 px de ancho, sin desplazamiento horizontal ni zoom, y en tablet y escritorio el listado muestra entre 2 y 3 tarjetas por fila.
 
 ## Supuestos
 
 - Todo el personal y los voluntarios comparten un único rol con permisos completos; cualquiera puede registrar, editar, eliminar y marcar como adoptada.
 - El volumen de datos es el de un refugio pequeño (del orden de decenas a pocos cientos de mascotas), por lo que no se requiere paginación ni búsqueda por texto.
-- El estado también puede cambiarse desde el formulario de edición; esto permite revertir un "adoptado" marcado por error a "disponible". La acción rápida del detalle solo va de "disponible" a "adoptado".
 - Se permiten nombres de mascota repetidos.
+- Hay pocos usuarios simultáneos, por lo que perder alguna vez una edición hecha a la vez por otra persona es un riesgo aceptado (ver FR-030).
 - La edad se registra en años completos; a una cría de menos de un año se le asigna 0.
 - La eliminación es definitiva (no hay papelera ni opción de deshacer); la confirmación previa es la protección contra errores.
 - Marcar como adoptada no requiere confirmación previa, por ser una acción reversible desde la edición; sí muestra confirmación posterior.
@@ -209,3 +231,4 @@ Al abrir la aplicación, el personal ve una bienvenida breve y dos contadores: c
 - Registro de datos de adoptantes o del proceso de adopción.
 - Pagos o donaciones.
 - Notificaciones de cualquier tipo.
+- Aplicación nativa para celular (se usa desde el navegador en todos los dispositivos).
