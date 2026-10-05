@@ -51,8 +51,10 @@ detalle que la especificación deja abiertas, eligiendo siempre la opción más 
   normalizados (nombre y descripción recortados). Las rutas POST y PUT la llaman antes de tocar
   la base de datos. El esquema de Mongoose repite solo tipos, `enum` y `required` como red de
   seguridad, sin mensajes propios.
-  En el frontend, Reactive Forms replica las mismas reglas con `Validators` de Angular más un
-  validador propio para "nombre recortado entre 2 y 40", y muestra los mismos textos.
+  En el frontend, Reactive Forms replica las mismas reglas con `Validators` de Angular más dos
+  validadores propios en `validadores.ts`: `nombreValido` (nombre recortado con `trim`,
+  obligatorio y entre 2 y 40 caracteres) y `descripcionValida` (descripción recortada con `trim`,
+  máximo 200 caracteres, igual que el backend), y muestra los mismos textos.
 - **Justificación**: cumple FR-019 y el principio VI (la API valida todo, aunque los datos no
   vengan del formulario) y permite probar la lógica sin base de datos. Duplicar reglas simples
   en el frontend es necesario para FR-018a (mensajes al salir del campo) y es más simple que
@@ -161,12 +163,19 @@ detalle que la especificación deja abiertas, eligiendo siempre la opción más 
 - **Alternativas consideradas**: proxy del dev server (descartada: la entrada pide URL en
   environment).
 
-## 16. CI (para implementar después)
+## 16. CI
 
 - **Decisión**: un workflow `.github/workflows/ci.yml` con dos jobs independientes sobre Node 24,
   cada uno con `working-directory` propio y caché de npm por `package-lock.json`:
-  - `backend`: `npm ci` → `npm test`.
-  - `frontend`: `npm ci` → `npm test -- --watch=false` → `npm run build`.
+  - `backend`: `npm ci` → `npm test`. Nace en el Issue #7, el primer grupo de código, con un
+    `backend/package.json` mínimo y una prueba de humo (`backend/test/smoke.test.js`).
+  - `frontend`: `npm ci` → `npm test -- --watch=false` → `npm run build`. Se añade en el
+    Issue #3, junto con el proyecto Angular.
   Las pruebas del backend no necesitan `MONGODB_URI` porque no tocan la base de datos.
-- **Justificación**: principio IV; jobs separados muestran claramente qué parte falla.
-- **Alternativas consideradas**: un solo job secuencial (descartada: menos claro y más lento).
+- **Justificación**: principio IV (pruebas en GitHub Actions en cada Pull Request). Crear la CI
+  antes que la lógica de negocio hace que todo cambio de código pase por el pipeline, sin
+  excepciones; la prueba de humo es lo mínimo para que `npm test` tenga algo que ejecutar. Jobs
+  separados muestran claramente qué parte falla.
+- **Alternativas consideradas**: un solo job secuencial (descartada: menos claro y más lento);
+  crear la CI después de las pruebas del backend (descartada: ese PR entraría sin pipeline,
+  contra el principio IV).

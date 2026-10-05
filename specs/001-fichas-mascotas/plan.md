@@ -30,7 +30,7 @@ en modo estricto con Angular 22 (CLI 22.1.8) en el frontend.
 `MONGODB_URI`.
 
 **Pruebas**:
-- Backend: test runner nativo `node --test` para `validarMascota` y `contarPorEstado`.
+- Backend: test runner nativo `node --test` para `validarMascota`, `validarFiltros` y `contarPorEstado`.
 - Frontend: runner por defecto de Angular CLI 22 (Vitest vía `ng test`), ejecutado con
   `--watch=false` en CI; cubre los validadores del formulario y `MascotasService`
   (con `HttpTestingController`).
@@ -58,9 +58,9 @@ como inmediatas para decenas a pocos cientos de mascotas. Sin metas de throughpu
 | I. Propósito y simplicidad | Sin capas de servicio/repositorio en el backend (rutas → modelo + utils); sin librerías de estado, de UI ni de validación; `window.confirm` para borrar; PUT reutilizado para "marcar como adoptada". Nada fuera de la spec. | ✅ |
 | II. Stack fijo | `frontend/` Angular standalone + TS estricto + Tailwind; `backend/` Node + Express + Mongoose; una colección `mascotas`; `MONGODB_URI` por variable de entorno (`dotenv`). | ✅ |
 | III. Diseño con personalidad y accesible | Tema Tailwind con paleta durazno/menta/lavanda/crema y Nunito; tarjetas redondeadas con sombra suave; hover con leve elevación y transiciones de 150–250 ms; `label` asociado a cada campo, foco visible (`focus-visible:ring`) y contraste legible. | ✅ |
-| IV. Calidad verificada en CI | Pruebas unitarias para toda la lógica de negocio (`validarMascota`, `contarPorEstado`, validadores del formulario); workflow con jobs `backend` y `frontend` (pruebas + build) planificado. | ✅ |
+| IV. Calidad verificada en CI | Pruebas unitarias para toda la lógica de negocio (`validarMascota`, `validarFiltros`, `contarPorEstado`, validadores del formulario); workflow con jobs `backend` y `frontend` (pruebas + build) planificado. | ✅ |
 | V. Colaboración Trunk Based | El plan no altera el flujo; las tareas se convertirán en Issues y ramas cortas. | ✅ |
-| VI. Seguridad | `.env` ignorado y `.env.example` versionado; `validarMascota` antes de persistir y solo campos permitidos; middleware de errores con mensaje genérico 500; ids inválidos → 404 sin CastError. | ✅ |
+| VI. Seguridad | `.env` ignorado y `.env.example` versionado; `validarMascota` antes de persistir (solo campos permitidos) y `validarFiltros` antes de consultar; middleware de errores con mensaje genérico 500; ids inválidos → 404 sin CastError. | ✅ |
 | VII. Spec como fuente de verdad | Mensajes, reglas y comportamientos tomados literalmente de la spec; decisiones no cubiertas registradas en `research.md`. | ✅ |
 
 **Resultado**: pasa sin violaciones. No hay complejidad que justificar.
@@ -88,6 +88,8 @@ specs/001-fichas-mascotas/
 backend/
 ├── package.json            # scripts: start (node src/server.js), dev (node --watch src/server.js), test (node --test)
 ├── .env.example            # MONGODB_URI=..., PORT=3000
+├── test/
+│   └── smoke.test.js       # prueba de humo que siempre pasa (arranque de la CI en el Issue #7)
 └── src/
     ├── app.js              # crea la app Express: cors(), express.json(), rutas /api/mascotas,
     │                       # 404 genérico y middleware de errores (400 JSON inválido / 500 genérico).
@@ -100,6 +102,8 @@ backend/
     └── utils/
         ├── validarMascota.js
         ├── validarMascota.test.js
+        ├── validarFiltros.js
+        ├── validarFiltros.test.js
         ├── contarPorEstado.js
         └── contarPorEstado.test.js
 
@@ -117,21 +121,27 @@ frontend/                   # creado con `ng new frontend` (standalone, strict, 
         └── mascotas/
             ├── mascota.ts                       # tipos Mascota, MascotaDatos, Resumen, Especie, Estado
             ├── mascotas.service.ts (+ .spec.ts) # MascotasService: listar, obtenerResumen, obtener, crear, actualizar, eliminar
-            ├── validadores.ts (+ .spec.ts)      # validador de nombre recortado 2–40 y mensajes compartidos del formulario
+            ├── validadores.ts (+ .spec.ts)      # nombreValido (recortado, 2–40), descripcionValida (recortada, ≤ 200) y MENSAJES
             ├── lista/                           # tarjetas + filtros (especie, estado), estados vacío y sin coincidencias
             ├── detalle/                         # datos, editar, eliminar (window.confirm), marcar como adoptada
             └── formulario/                      # alta y edición (Reactive Forms), un solo componente
 
-.github/workflows/ci.yml    # (se implementará después) jobs backend y frontend
+.github/workflows/ci.yml    # job backend (nace en el Issue #7) y job frontend (se añade en el Issue #3)
 ```
 
 **Decisión de estructura**: aplicación web en monorepo con `frontend/` y `backend/`
 independientes, cada uno con su `package.json` y `package-lock.json`, sin `package.json` en
-la raíz. El backend no tiene capa de servicios: la ruta llama a `validarMascota` y luego al
+la raíz. El backend no tiene capa de servicios: la ruta llama a `validarMascota` o `validarFiltros` y luego al
 modelo; la única lógica de negocio está en `src/utils/` y se prueba de forma aislada. Las
 pruebas del backend se colocan junto a cada función (`*.test.js`), que `node --test` detecta
-por defecto. En el frontend se usa la convención de nombres del CLI 22 (`lista.ts`,
-`detalle.ts`, …) y un único componente de formulario para crear y editar.
+por defecto; la única excepción es la prueba de humo `backend/test/smoke.test.js`. En el
+frontend hay un único componente de formulario para crear y editar, con esta regla de nombres:
+
+- **Servicios**: sufijo `.service.ts` y clase con sufijo `Service` (`mascotas.service.ts` →
+  `MascotasService`, `notificacion.service.ts` → `NotificacionService`).
+- **Componentes**: convención del CLI 22, **sin** sufijo (`inicio.ts`, `lista.ts`, `detalle.ts`,
+  `formulario.ts`, `notificacion.ts`), con su plantilla `.html` al lado.
+- **Pruebas**: sufijo `.spec.ts` junto al archivo que prueban.
 
 ## Diseño por capas
 
@@ -142,7 +152,9 @@ por defecto. En el frontend se usa la convención de nombres del CLI 22 (`lista.
   `findByIdAndUpdate(id, datos, { new: true, runValidators: true })` → respuesta.
 - **Lectura por id / borrado**: `mongoose.isValidObjectId(id)` falso o documento no encontrado →
   `404 { mensaje: 'Esta mascota ya no existe' }`.
-- **Listado**: valida `especie`/`estado` si vienen; `Mascota.find(filtro).sort({ createdAt: -1 })`.
+- **Listado**: `validarFiltros(req.query)` (función pura en `src/utils/`) devuelve
+  `{ valido, mensaje, filtro }`; si no es válido → `400 { mensaje }`; si lo es,
+  `Mascota.find(filtro).sort({ createdAt: -1 })`.
 - **Resumen**: `Mascota.find({}, 'estado')` → `contarPorEstado` → `{ disponibles, adoptados }`.
 - **Errores asíncronos**: Express 5 propaga a `next(err)` los rechazos de handlers `async`,
   por lo que no se necesitan `try/catch` ni librerías auxiliares; el middleware final responde
@@ -157,7 +169,9 @@ por defecto. En el frontend se usa la convención de nombres del CLI 22 (`lista.
   componente de listado y se reinician al salir (supuesto de la spec).
 - **Formulario** (FR-010 a FR-020): `FormGroup` tipado con `nombre` (validador propio de
   longitud recortada), `especie` (`required`), `edad` (`required`, `min(0)`, `max(30)`,
-  `pattern` de entero), `estado` (valor inicial `disponible`), `descripcion` (`maxLength(200)`).
+  `pattern` de entero), `estado` (valor inicial `disponible`), `descripcion` (validador propio
+  `descripcionValida`: máximo 200 caracteres sobre el valor recortado con `trim`, igual que el
+  backend).
   Los errores se muestran solo cuando el control es inválido y está `touched` (Angular lo marca
   al salir del campo); al enviar se llama a `markAllAsTouched()` y se aborta si el formulario es
   inválido (FR-018a). En modo edición se precarga con `GET /:id`.
@@ -189,18 +203,26 @@ por defecto. En el frontend se usa la convención de nombres del CLI 22 (`lista.
 | Unidad | Runner | Casos clave |
 |--------|--------|-------------|
 | `validarMascota` | `node --test` | datos válidos; nombre vacío / solo espacios / 1 y 41 caracteres / 2 y 40 aceptados; especie inválida; edad -1, 31, 2.5, `"3"`, ausente; 0 y 30 aceptados; descripción 200 aceptada y 201 rechazada; estado por defecto `disponible`; varios errores a la vez; campos extra ignorados; entrada `null`. |
+| `validarFiltros` | `node --test` | query `undefined` o `{}` → filtro vacío; parámetros vacíos ignorados; especie y estado válidos, solos y combinados; especie `pez` → "El filtro de especie no es válido"; estado inválido → "El filtro de estado no es válido"; parámetro repetido (arreglo) rechazado; claves extra ignoradas. |
 | `contarPorEstado` | `node --test` | arreglo vacío → 0/0; mezcla 4/2; estados desconocidos ignorados. |
-| `validadores.ts` | `ng test` | nombre recortado en límites; mensajes iguales a la spec. |
+| `smoke.test.js` | `node --test` | una aserción trivial que siempre pasa (arranque de la CI). |
+| `validadores.ts` | `ng test` | `nombreValido` con valor recortado en los límites (vacío, solo espacios, 1, 2, 40 y 41 caracteres); `descripcionValida` con vacío, `null`, 200, 201 y 200 con espacios alrededor; `MENSAJES` iguales a la spec. |
 | `MascotasService` | `ng test` | URL y método correctos de cada llamada; parámetros de filtro solo cuando tienen valor. |
 
-## CI (para implementar después)
+## CI
 
 `.github/workflows/ci.yml`, disparado en `pull_request` y `push` a `main`, Node 24 con caché
-de npm:
+de npm. Se construye de forma incremental para que todo cambio de código pase por CI:
 
-- **backend** (`working-directory: backend`): `npm ci` → `npm test`.
+- **backend** (`working-directory: backend`): `npm ci` → `npm test`. **Nace en el Issue #7**,
+  el primer grupo de código, junto con un `backend/package.json` mínimo y la prueba de humo.
+  Desde su PR, `main` exige este check.
 - **frontend** (`working-directory: frontend`): `npm ci` → `npm test -- --watch=false` →
-  `npm run build`.
+  `npm run build`. **Se añade en el Issue #3**, en el mismo PR que crea el proyecto Angular;
+  tras fusionarlo, `main` exige también este check.
+
+La lógica de negocio del backend (Issue #8) se desarrolla en TDD: un primer commit solo con las
+pruebas (CI en rojo esperado) y un segundo con la implementación (CI en verde).
 
 ## Verificación de la constitución tras el diseño
 

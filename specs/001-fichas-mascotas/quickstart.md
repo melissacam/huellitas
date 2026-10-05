@@ -62,6 +62,7 @@ Con el backend levantado (usar `curl.exe` en PowerShell):
 | 6    | `GET /api/mascotas/resumen`                                                                   | `{ "disponibles": 0, "adoptados": 1 }`                    |
 | 7    | `DELETE /api/mascotas/<id>` y luego `GET /api/mascotas/<id>`                                  | `204`, luego `404` "Esta mascota ya no existe"            |
 | 8    | `GET /api/mascotas/abc`                                                                       | `404` (id con formato inválido)                           |
+| 9    | `GET /api/mascotas?especie=pez`                                                               | `400` `{ "mensaje": "El filtro de especie no es válido" }` |
 
 Ejemplo:
 
