@@ -26,4 +26,4 @@ jobs:
         run: npm ci
 
       - name: Ejecutar pruebas
-        run: npm testcd backend
+        run: npm test
