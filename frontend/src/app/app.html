@@ -1,0 +1,61 @@
+<div class="flex min-h-dvh flex-col">
+  <header class="relative overflow-hidden border-b-2 border-durazno/70 bg-crema/90">
+    <!-- Huellitas decorativas -->
+    <span aria-hidden="true" class="pointer-events-none absolute -top-1 right-6 rotate-12 text-3xl opacity-25 select-none">🐾</span>
+    <span aria-hidden="true" class="pointer-events-none absolute bottom-0 right-28 -rotate-12 text-xl opacity-20 select-none max-sm:hidden">🐾</span>
+
+    <div class="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-x-6 gap-y-3 px-4 py-4 sm:px-6">
+      <a
+        routerLink="/"
+        class="inline-flex min-h-11 items-center gap-2 font-titulo text-2xl font-bold tracking-tight text-tinta transition-transform duration-200 motion-safe:hover:-rotate-2"
+      >
+        Huellitas <span aria-hidden="true">🐾</span>
+      </a>
+
+      <nav aria-label="Navegación principal" class="w-full sm:w-auto">
+        <ul class="flex flex-wrap items-center gap-2 font-semibold">
+          <li>
+            <a
+              routerLink="/"
+              routerLinkActive="bg-durazno/60"
+              ariaCurrentWhenActive="page"
+              [routerLinkActiveOptions]="{ exact: true }"
+              class="inline-flex min-h-11 items-center rounded-full px-4 transition-colors duration-200 hover:bg-durazno/40"
+            >
+              Inicio
+            </a>
+          </li>
+          <li>
+            <a
+              routerLink="/mascotas"
+              routerLinkActive="bg-durazno/60"
+              ariaCurrentWhenActive="page"
+              [routerLinkActiveOptions]="{ exact: true }"
+              class="inline-flex min-h-11 items-center rounded-full px-4 transition-colors duration-200 hover:bg-durazno/40"
+            >
+              Mascotas
+            </a>
+          </li>
+          <li class="ml-auto sm:ml-2">
+            <a
+              routerLink="/mascotas/nueva"
+              class="inline-flex min-h-11 items-center gap-1 rounded-full bg-rosa px-5 font-bold text-tinta shadow-rosa transition duration-200 ease-rebote hover:shadow-lg motion-safe:hover:-translate-y-0.5 motion-safe:active:translate-y-0"
+            >
+              <span aria-hidden="true">+</span> Registrar mascota
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main class="mx-auto w-full max-w-5xl flex-1 px-4 py-8 sm:px-6 sm:py-10">
+    <router-outlet />
+  </main>
+
+  <footer class="border-t-2 border-durazno/50 py-6 text-center text-sm text-tinta-suave">
+    <p>
+      Hecho con cariño para nuestro refugio <span aria-hidden="true">🐶 🐱</span>
+    </p>
+  </footer>
+</div>

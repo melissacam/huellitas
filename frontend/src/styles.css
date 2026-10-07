@@ -1,0 +1,65 @@
+@import "tailwindcss";
+
+/* Tokens de diseño de Huellitas (constitución, principio III) */
+@theme {
+  --font-titulo: "Fredoka", ui-rounded, "Segoe UI", system-ui, sans-serif;
+  --font-sans: "Nunito", ui-rounded, "Segoe UI", system-ui, -apple-system, sans-serif;
+
+  --color-crema: #fff8f0;
+  --color-durazno: #ffd6a5;
+  --color-menta: #b9fbc0;
+  --color-lavanda: #c8b6ff;
+  --color-rosa: #ffadad;
+  --color-celeste: #a0c4ff;
+
+  /* Texto cálido oscuro: contraste ≥ 4.5:1 sobre crema y sobre todos los pasteles */
+  --color-tinta: #3d3027;
+  --color-tinta-suave: #6b5a4e;
+
+  /* Sombras suaves teñidas del color pastel */
+  --shadow-durazno: 0 8px 24px -10px rgb(240 160 80 / 0.45);
+  --shadow-menta: 0 8px 24px -10px rgb(60 180 90 / 0.4);
+  --shadow-lavanda: 0 8px 24px -10px rgb(120 90 220 / 0.4);
+  --shadow-rosa: 0 8px 24px -10px rgb(230 100 100 / 0.4);
+  --shadow-celeste: 0 8px 24px -10px rgb(70 120 220 / 0.4);
+
+  /* Curva con un pequeño rebote al final, para hover de tarjetas y botones */
+  --ease-rebote: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-crema font-sans text-tinta antialiased;
+    /* Huellitas decorativas muy tenues en el fondo */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cg fill='%23FFD6A5' fill-opacity='0.28' transform='rotate(-18 34 40)'%3E%3Cellipse cx='34' cy='46' rx='10' ry='8.5'/%3E%3Ccircle cx='22' cy='33' r='4'/%3E%3Ccircle cx='30' cy='27' r='4'/%3E%3Ccircle cx='39' cy='27' r='4'/%3E%3Ccircle cx='46' cy='34' r='4'/%3E%3C/g%3E%3Cg fill='%23C8B6FF' fill-opacity='0.2' transform='rotate(22 116 118)'%3E%3Cellipse cx='116' cy='124' rx='10' ry='8.5'/%3E%3Ccircle cx='104' cy='111' r='4'/%3E%3Ccircle cx='112' cy='105' r='4'/%3E%3Ccircle cx='121' cy='105' r='4'/%3E%3Ccircle cx='128' cy='112' r='4'/%3E%3C/g%3E%3C/svg%3E");
+  }
+
+  h1,
+  h2,
+  h3 {
+    @apply font-titulo;
+  }
+
+  /* Foco visible en todo elemento interactivo */
+  :focus-visible {
+    outline: 3px solid var(--color-tinta);
+    outline-offset: 3px;
+    border-radius: 0.75rem;
+  }
+}
+
+/* Respetar a quien prefiere menos movimiento */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
