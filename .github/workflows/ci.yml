@@ -27,3 +27,27 @@ jobs:
 
       - name: Ejecutar pruebas
         run: npm test
+
+  frontend:
+    name: Frontend (build + tests)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Ejecutar pruebas
+        run: npm run test:ci
+
+      - name: Compilar
+        run: npm run build

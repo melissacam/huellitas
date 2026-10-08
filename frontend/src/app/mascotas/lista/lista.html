@@ -1,0 +1,118 @@
+<section aria-labelledby="titulo-lista">
+  <div class="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+    <div>
+      <h1 id="titulo-lista" class="text-3xl font-bold sm:text-4xl">Nuestras mascotas</h1>
+      <p class="mt-2 text-tinta-suave">Conoce a quienes viven en el refugio.</p>
+    </div>
+
+    <div role="group" aria-label="Filtros del listado" class="grid grid-cols-2 gap-3 sm:flex sm:gap-4">
+      <div class="flex flex-col gap-1">
+        <label for="filtro-especie" class="text-sm font-bold">Especie</label>
+        <select
+          #selectEspecie
+          id="filtro-especie"
+          [value]="especie()"
+          (change)="cambiarEspecie(selectEspecie.value)"
+          class="min-h-11 min-w-11 rounded-2xl border-2 border-durazno bg-white px-3 font-semibold transition-colors duration-200 hover:border-tinta/40"
+        >
+          <option value="">Todas</option>
+          <option value="perro">Perro</option>
+          <option value="gato">Gato</option>
+          <option value="otro">Otro</option>
+        </select>
+      </div>
+      <div class="flex flex-col gap-1">
+        <label for="filtro-estado" class="text-sm font-bold">Estado</label>
+        <select
+          #selectEstado
+          id="filtro-estado"
+          [value]="estado()"
+          (change)="cambiarEstado(selectEstado.value)"
+          class="min-h-11 min-w-11 rounded-2xl border-2 border-durazno bg-white px-3 font-semibold transition-colors duration-200 hover:border-tinta/40"
+        >
+          <option value="">Todos</option>
+          <option value="disponible">Disponible</option>
+          <option value="adoptado">Adoptado</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-8" aria-live="polite">
+    @if (cargando()) {
+      <p role="status" class="flex flex-col items-center gap-3 py-16 font-semibold text-tinta-suave">
+        <span aria-hidden="true" class="text-4xl motion-safe:animate-bounce">🐾</span>
+        Buscando huellitas…
+      </p>
+    } @else if (error()) {
+      <div role="alert" class="mx-auto max-w-lg rounded-3xl bg-rosa/50 p-6 text-center shadow-rosa">
+        <p class="text-3xl" aria-hidden="true">🙀</p>
+        <p class="mt-2 font-semibold">{{ error() }}</p>
+        <button
+          type="button"
+          (click)="cargar()"
+          class="mt-4 inline-flex min-h-11 items-center rounded-full bg-white px-6 font-bold shadow-rosa transition duration-200 ease-rebote hover:shadow-lg motion-safe:hover:-translate-y-0.5"
+        >
+          Reintentar
+        </button>
+      </div>
+    } @else if (mascotas().length === 0) {
+      <div class="mx-auto max-w-lg rounded-3xl border-2 border-dashed border-durazno bg-white/70 p-8 text-center">
+        @if (hayFiltros()) {
+          <p class="text-4xl" aria-hidden="true">🔍</p>
+          <h2 class="mt-3 text-2xl font-semibold">No hay mascotas que coincidan con los filtros</h2>
+          <p class="mt-2 text-tinta-suave">Prueba con otra combinación o mira a todos los peludos.</p>
+          <button
+            type="button"
+            (click)="quitarFiltros()"
+            class="mt-5 inline-flex min-h-11 items-center rounded-full bg-durazno px-6 font-bold shadow-durazno transition duration-200 ease-rebote hover:shadow-lg motion-safe:hover:-translate-y-0.5"
+          >
+            Quitar filtros
+          </button>
+        } @else {
+          <p class="text-4xl" aria-hidden="true">🐶 🐱</p>
+          <h2 class="mt-3 text-2xl font-semibold">Aún no hay mascotas registradas</h2>
+          <p class="mt-2 text-tinta-suave">El refugio está esperando su primera ficha. ¿Empezamos?</p>
+          <a
+            routerLink="/mascotas/nueva"
+            class="mt-5 inline-flex min-h-11 items-center rounded-full bg-rosa px-6 font-bold shadow-rosa transition duration-200 ease-rebote hover:shadow-lg motion-safe:hover:-translate-y-0.5"
+          >
+            Registrar mascota
+          </a>
+        }
+      </div>
+    } @else {
+      <ul class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        @for (mascota of mascotas(); track mascota._id) {
+          <li>
+            <a
+              [routerLink]="['/mascotas', mascota._id]"
+              [class]="especies[mascota.especie].sombra"
+              class="group flex h-full items-center gap-4 rounded-3xl bg-white p-5 transition duration-200 ease-rebote hover:shadow-lg motion-safe:hover:-translate-y-1"
+            >
+              <span
+                aria-hidden="true"
+                [class]="especies[mascota.especie].fondo"
+                class="grid size-16 shrink-0 place-items-center rounded-full text-3xl transition-transform duration-200 ease-rebote motion-safe:group-hover:-rotate-6"
+              >
+                {{ especies[mascota.especie].emoji }}
+              </span>
+              <span class="min-w-0 flex-1">
+                <span class="block truncate font-titulo text-xl font-semibold">{{ mascota.nombre }}</span>
+                <span class="block text-sm text-tinta-suave">
+                  {{ especies[mascota.especie].etiqueta }} · {{ textoEdad(mascota.edad) }}
+                </span>
+                <span
+                  [class]="estados[mascota.estado].fondo"
+                  class="mt-2 inline-block rounded-full px-3 py-0.5 text-xs font-bold"
+                >
+                  {{ estados[mascota.estado].etiqueta }}
+                </span>
+              </span>
+            </a>
+          </li>
+        }
+      </ul>
+    }
+  </div>
+</section>
