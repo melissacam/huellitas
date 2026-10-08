@@ -1,0 +1,48 @@
+<div class="fixed inset-0 z-40 flex items-end justify-center p-4 sm:items-center">
+  <!-- Fondo: pulsarlo equivale a cancelar -->
+  <div aria-hidden="true" (click)="cerrar()" class="absolute inset-0 bg-tinta/40 motion-safe:animate-aparecer"></div>
+
+  <div
+    role="alertdialog"
+    aria-modal="true"
+    aria-labelledby="dialogo-titulo"
+    aria-describedby="dialogo-mensaje"
+    (keydown)="atraparFoco($event)"
+    class="relative w-full max-w-md rounded-3xl bg-crema p-6 text-center shadow-rosa motion-safe:animate-aparecer sm:p-8"
+  >
+    <span aria-hidden="true" class="mx-auto grid size-16 place-items-center rounded-full bg-rosa text-3xl shadow-rosa">
+      🥺
+    </span>
+    <h2 id="dialogo-titulo" class="mt-4 text-2xl font-semibold">{{ titulo() }}</h2>
+    <p id="dialogo-mensaje" class="mt-2 text-tinta-suave">{{ mensaje() }}</p>
+
+    <div class="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-center">
+      <button
+        #botonCancelar
+        type="button"
+        (click)="cerrar()"
+        [disabled]="ocupado()"
+        class="inline-flex min-h-11 items-center justify-center rounded-full border-2 border-tinta/15 bg-white px-6 font-bold transition duration-200 ease-rebote enabled:hover:border-durazno enabled:hover:shadow-durazno enabled:motion-safe:hover:-translate-y-0.5 disabled:opacity-70"
+      >
+        Cancelar
+      </button>
+      <button
+        #botonConfirmar
+        type="button"
+        (click)="confirmar.emit()"
+        [disabled]="ocupado()"
+        class="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-rosa px-6 font-bold text-tinta shadow-rosa transition duration-200 ease-rebote enabled:hover:shadow-lg enabled:motion-safe:hover:-translate-y-0.5 disabled:cursor-wait disabled:opacity-70"
+      >
+        @if (ocupado()) {
+          <span
+            aria-hidden="true"
+            class="size-4 rounded-full border-2 border-tinta/30 border-t-tinta motion-safe:animate-spin"
+          ></span>
+          {{ textoOcupado() }}
+        } @else {
+          {{ textoConfirmar() }}
+        }
+      </button>
+    </div>
+  </div>
+</div>

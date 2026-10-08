@@ -22,3 +22,11 @@ export function textoEdad(edad: number): string {
   }
   return edad === 1 ? '1 año' : `${edad} años`;
 }
+
+const FORMATO_FECHA = new Intl.DateTimeFormat('es', { day: 'numeric', month: 'long', year: 'numeric' });
+
+/** Fecha de registro legible: "4 de octubre de 2026". Fecha inválida → "". */
+export function textoFecha(iso: string): string {
+  const fecha = new Date(iso);
+  return Number.isNaN(fecha.getTime()) ? '' : FORMATO_FECHA.format(fecha);
+}
