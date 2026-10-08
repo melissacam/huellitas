@@ -75,4 +75,11 @@ describe('MascotasService', () => {
     expect(peticion.request.body).toEqual({ ...datos, estado: 'adoptado' });
     peticion.flush({ _id: 'abc123', ...datos, estado: 'adoptado' });
   });
+
+  it('eliminar hace DELETE a /mascotas/:id', () => {
+    servicio.eliminar('abc123').subscribe();
+    const peticion = http.expectOne(`${url}/abc123`);
+    expect(peticion.request.method).toBe('DELETE');
+    peticion.flush(null, { status: 204, statusText: 'No Content' });
+  });
 });

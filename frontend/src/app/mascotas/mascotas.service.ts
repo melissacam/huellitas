@@ -29,4 +29,8 @@ export class MascotasService {
   actualizar(id: string, datos: MascotaDatos): Observable<Mascota> {
     return this.http.put<Mascota>(`${this.url}/${encodeURIComponent(id)}`, datos);
   }
+
+  eliminar(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.url}/${encodeURIComponent(id)}`);
+  }
 }
