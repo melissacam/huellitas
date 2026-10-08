@@ -2,6 +2,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { environment } from '../../environments/environment';
+import { MascotaDatos } from './mascota';
 import { MascotasService } from './mascotas.service';
 
 describe('MascotasService', () => {
@@ -42,5 +43,36 @@ describe('MascotasService', () => {
     expect(peticion.request.method).toBe('GET');
     peticion.flush({ disponibles: 4, adoptados: 2 });
     expect(resultado).toEqual({ disponibles: 4, adoptados: 2 });
+  });
+
+  const datos: MascotaDatos = {
+    nombre: 'Luna',
+    especie: 'gato',
+    edad: 2,
+    estado: 'disponible',
+    descripcion: 'Muy cariñosa',
+  };
+
+  it('obtener hace GET a /mascotas/:id', () => {
+    servicio.obtener('abc123').subscribe();
+    const peticion = http.expectOne(`${url}/abc123`);
+    expect(peticion.request.method).toBe('GET');
+    peticion.flush({ _id: 'abc123', ...datos });
+  });
+
+  it('crear hace POST al listado con los datos', () => {
+    servicio.crear(datos).subscribe();
+    const peticion = http.expectOne(url);
+    expect(peticion.request.method).toBe('POST');
+    expect(peticion.request.body).toEqual(datos);
+    peticion.flush({ _id: 'nuevo', ...datos });
+  });
+
+  it('actualizar hace PUT a /mascotas/:id con los datos', () => {
+    servicio.actualizar('abc123', { ...datos, estado: 'adoptado' }).subscribe();
+    const peticion = http.expectOne(`${url}/abc123`);
+    expect(peticion.request.method).toBe('PUT');
+    expect(peticion.request.body).toEqual({ ...datos, estado: 'adoptado' });
+    peticion.flush({ _id: 'abc123', ...datos, estado: 'adoptado' });
   });
 });

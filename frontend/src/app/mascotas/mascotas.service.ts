@@ -3,7 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { construirParametros } from './construir-parametros';
-import { Filtros, Mascota, Resumen } from './mascota';
+import { Filtros, Mascota, MascotaDatos, Resumen } from './mascota';
 
 @Injectable({ providedIn: 'root' })
 export class MascotasService {
@@ -16,5 +16,17 @@ export class MascotasService {
 
   resumen(): Observable<Resumen> {
     return this.http.get<Resumen>(`${this.url}/resumen`);
+  }
+
+  obtener(id: string): Observable<Mascota> {
+    return this.http.get<Mascota>(`${this.url}/${encodeURIComponent(id)}`);
+  }
+
+  crear(datos: MascotaDatos): Observable<Mascota> {
+    return this.http.post<Mascota>(this.url, datos);
+  }
+
+  actualizar(id: string, datos: MascotaDatos): Observable<Mascota> {
+    return this.http.put<Mascota>(`${this.url}/${encodeURIComponent(id)}`, datos);
   }
 }
