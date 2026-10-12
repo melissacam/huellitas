@@ -15,6 +15,8 @@
   /* Texto cálido oscuro: contraste ≥ 4.5:1 sobre crema y sobre todos los pasteles */
   --color-tinta: #3d3027;
   --color-tinta-suave: #6b5a4e;
+  /* Rojo cálido para errores de validación: contraste ≥ 4.5:1 sobre blanco y crema */
+  --color-alerta: #a8323a;
 
   /* Sombras suaves teñidas del color pastel */
   --shadow-durazno: 0 8px 24px -10px rgb(240 160 80 / 0.45);
@@ -25,6 +27,30 @@
 
   /* Curva con un pequeño rebote al final, para hover de tarjetas y botones */
   --ease-rebote: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Entrada de la notificación (toast) */
+  --animate-aparecer: aparecer 220ms var(--ease-rebote);
+
+  @keyframes aparecer {
+    from {
+      opacity: 0;
+      transform: translateY(0.75rem) scale(0.96);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+}
+
+/* Campos de formulario (filtros del listado y formulario de mascota) */
+@utility campo {
+  @apply min-h-11 w-full rounded-2xl border-2 border-durazno bg-white px-3 font-semibold transition-colors duration-200 placeholder:font-normal placeholder:text-tinta-suave hover:border-tinta/40 aria-invalid:border-alerta;
+}
+
+/* Mensaje de validación junto al campo */
+@utility mensaje-error {
+  @apply text-sm font-bold text-alerta;
 }
 
 @layer base {

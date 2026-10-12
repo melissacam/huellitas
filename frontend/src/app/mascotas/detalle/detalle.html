@@ -1,0 +1,147 @@
+<section class="mx-auto max-w-2xl" [attr.aria-busy]="cargando() || ocupado() !== null">
+  @if (noExiste()) {
+    <app-no-encontrada />
+  } @else if (cargando()) {
+    <p role="status" class="flex flex-col items-center gap-3 py-16 font-semibold text-tinta-suave">
+      <span aria-hidden="true" class="text-4xl motion-safe:animate-bounce">🐾</span>
+      Buscando la ficha…
+    </p>
+  } @else if (errorCarga()) {
+    <div role="alert" class="mx-auto max-w-lg rounded-3xl bg-rosa/50 p-6 text-center shadow-rosa">
+      <p class="text-3xl" aria-hidden="true">🙀</p>
+      <p class="mt-2 font-semibold">{{ errorCarga() }}</p>
+      <button
+        type="button"
+        (click)="cargar()"
+        class="mt-4 inline-flex min-h-11 items-center rounded-full bg-white px-6 font-bold shadow-rosa transition duration-200 ease-rebote hover:shadow-lg motion-safe:hover:-translate-y-0.5"
+      >
+        Reintentar
+      </button>
+    </div>
+  } @else if (mascota(); as m) {
+    <a
+      routerLink="/mascotas"
+      class="inline-flex min-h-11 items-center gap-1 rounded-full px-3 font-semibold text-tinta-suave transition-colors duration-200 hover:bg-durazno/40 hover:text-tinta"
+    >
+      <span aria-hidden="true">←</span> Volver al listado
+    </a>
+
+    <article
+      aria-labelledby="titulo-detalle"
+      [class]="especies[m.especie].sombra"
+      class="mt-4 overflow-hidden rounded-3xl bg-white"
+    >
+      <!-- Cabecera de la ficha con el color de la especie -->
+      <div [class]="especies[m.especie].fondo" class="relative flex flex-col items-center gap-3 px-6 pt-8 pb-6 text-center sm:flex-row sm:text-left">
+        <span aria-hidden="true" class="pointer-events-none absolute top-2 right-4 rotate-12 text-2xl opacity-30 select-none">🐾</span>
+        <span
+          aria-hidden="true"
+          class="grid size-24 shrink-0 place-items-center rounded-full bg-white/70 text-5xl transition-transform duration-200 ease-rebote motion-safe:hover:-rotate-6"
+        >
+          {{ especies[m.especie].emoji }}
+        </span>
+        <div class="min-w-0">
+          <h1 id="titulo-detalle" class="text-3xl font-bold break-words sm:text-4xl">{{ m.nombre }}</h1>
+          <span
+            [class]="estados[m.estado].fondo"
+            class="mt-2 inline-block rounded-full px-3 py-0.5 text-sm font-bold shadow-sm"
+          >
+            {{ estados[m.estado].etiqueta }}
+          </span>
+        </div>
+      </div>
+
+      <div class="p-6 sm:p-8">
+        <dl class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <div class="rounded-2xl bg-crema px-4 py-3">
+            <dt class="text-sm font-bold text-tinta-suave">Especie</dt>
+            <dd class="font-titulo text-lg font-semibold">{{ especies[m.especie].etiqueta }}</dd>
+          </div>
+          <div class="rounded-2xl bg-crema px-4 py-3">
+            <dt class="text-sm font-bold text-tinta-suave">Edad</dt>
+            <dd class="font-titulo text-lg font-semibold">{{ textoEdad(m.edad) }}</dd>
+          </div>
+          <div class="rounded-2xl bg-crema px-4 py-3">
+            <dt class="text-sm font-bold text-tinta-suave">Registrada el</dt>
+            <dd class="font-titulo text-lg font-semibold">
+              <time [attr.datetime]="m.createdAt">{{ textoFecha(m.createdAt) }}</time>
+            </dd>
+          </div>
+        </dl>
+
+        <h2 class="mt-6 text-xl font-semibold">Sobre {{ m.nombre }}</h2>
+        @if (m.descripcion) {
+          <p class="mt-2 leading-relaxed break-words whitespace-pre-line">{{ m.descripcion }}</p>
+        } @else {
+          <p class="mt-2 text-tinta-suave italic">Todavía no tiene descripción.</p>
+        }
+
+        @if (error()) {
+          <p role="alert" class="mt-6 rounded-2xl bg-rosa/50 px-4 py-3 font-semibold">
+            <span aria-hidden="true">🙀</span> {{ error() }}
+          </p>
+        }
+
+        <!-- Acciones -->
+        <div class="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+          @if (m.estado === 'disponible') {
+            <button
+              type="button"
+              (click)="adoptar()"
+              [disabled]="ocupado() !== null"
+              class="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-menta px-6 font-bold text-tinta shadow-menta transition duration-200 ease-rebote enabled:hover:shadow-lg enabled:motion-safe:hover:-translate-y-0.5 enabled:motion-safe:active:translate-y-0 disabled:opacity-70"
+              [class.cursor-wait]="ocupado() === 'adoptar'"
+            >
+              @if (ocupado() === 'adoptar') {
+                <span
+                  aria-hidden="true"
+                  class="size-4 rounded-full border-2 border-tinta/30 border-t-tinta motion-safe:animate-spin"
+                ></span>
+                Guardando…
+              } @else {
+                <span aria-hidden="true">🏡</span> Marcar como adoptada
+              }
+            </button>
+          }
+
+          <a
+            [routerLink]="['/mascotas', m._id, 'editar']"
+            [attr.aria-disabled]="ocupado() !== null ? true : null"
+            [attr.tabindex]="ocupado() !== null ? -1 : null"
+            [class.pointer-events-none]="ocupado() !== null"
+            [class.opacity-70]="ocupado() !== null"
+            class="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-durazno px-6 font-bold shadow-durazno transition duration-200 ease-rebote hover:shadow-lg motion-safe:hover:-translate-y-0.5"
+          >
+            <span aria-hidden="true">✏️</span> Editar
+          </a>
+
+          <button
+            #botonEliminar
+            type="button"
+            (click)="pedirConfirmacion()"
+            [disabled]="ocupado() !== null"
+            class="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border-2 border-rosa bg-white px-6 font-bold text-tinta transition duration-200 ease-rebote enabled:hover:bg-rosa/30 enabled:hover:shadow-rosa enabled:motion-safe:hover:-translate-y-0.5 disabled:opacity-70 sm:ml-auto"
+          >
+            <span aria-hidden="true">🗑️</span> Eliminar
+          </button>
+        </div>
+
+        @if (ocupado() === 'adoptar') {
+          <p role="status" class="sr-only">Guardando el cambio de estado…</p>
+        }
+      </div>
+    </article>
+
+    @if (confirmando()) {
+      <app-dialogo-confirmacion
+        [titulo]="'¿Eliminar a ' + m.nombre + '?'"
+        mensaje="Su ficha se borrará de forma definitiva y no se podrá recuperar."
+        textoConfirmar="Sí, eliminar"
+        textoOcupado="Eliminando…"
+        [ocupado]="ocupado() === 'eliminar'"
+        (confirmar)="eliminar()"
+        (cancelar)="cancelarEliminacion()"
+      />
+    }
+  }
+</section>

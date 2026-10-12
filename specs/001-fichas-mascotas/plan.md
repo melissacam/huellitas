@@ -55,7 +55,7 @@ como inmediatas para decenas a pocos cientos de mascotas. Sin metas de throughpu
 
 | Principio | Cómo lo cumple el plan | Estado |
 |-----------|------------------------|--------|
-| I. Propósito y simplicidad | Sin capas de servicio/repositorio en el backend (rutas → modelo + utils); sin librerías de estado, de UI ni de validación; `window.confirm` para borrar; PUT reutilizado para "marcar como adoptada". Nada fuera de la spec. | ✅ |
+| I. Propósito y simplicidad | Sin capas de servicio/repositorio en el backend (rutas → modelo + utils); sin librerías de estado, de UI ni de validación; un único diálogo propio (`DialogoConfirmacion`, sin librerías) para confirmar el borrado; PUT reutilizado para "marcar como adoptada". Nada fuera de la spec. | ✅ |
 | II. Stack fijo | `frontend/` Angular standalone + TS estricto + Tailwind; `backend/` Node + Express + Mongoose; una colección `mascotas`; `MONGODB_URI` por variable de entorno (`dotenv`). | ✅ |
 | III. Diseño con personalidad y accesible | Tema Tailwind con paleta durazno/menta/lavanda/crema y Nunito; tarjetas redondeadas con sombra suave; hover con leve elevación y transiciones de 150–250 ms; `label` asociado a cada campo, foco visible (`focus-visible:ring`) y contraste legible. | ✅ |
 | IV. Calidad verificada en CI | Pruebas unitarias para toda la lógica de negocio (`validarMascota`, `validarFiltros`, `contarPorEstado`, validadores del formulario); workflow con jobs `backend` y `frontend` (pruebas + build) planificado. | ✅ |
@@ -118,12 +118,13 @@ frontend/                   # creado con `ng new frontend` (standalone, strict, 
         ├── app.routes.ts                        # '', 'mascotas', 'mascotas/nueva', 'mascotas/:id', 'mascotas/:id/editar', '**'
         ├── inicio/                              # bienvenida, contadores, accesos directos
         ├── notificacion/                        # NotificacionService (signal, autocierre ~3 s) + componente role="status"
+        ├── dialogo-confirmacion/                # DialogoConfirmacion: modal accesible con el estilo de la app
         └── mascotas/
             ├── mascota.ts                       # tipos Mascota, MascotaDatos, Resumen, Especie, Estado
             ├── mascotas.service.ts (+ .spec.ts) # MascotasService: listar, obtenerResumen, obtener, crear, actualizar, eliminar
             ├── validadores.ts (+ .spec.ts)      # nombreValido (recortado, 2–40), descripcionValida (recortada, ≤ 200) y MENSAJES
             ├── lista/                           # tarjetas + filtros (especie, estado), estados vacío y sin coincidencias
-            ├── detalle/                         # datos, editar, eliminar (window.confirm), marcar como adoptada
+            ├── detalle/                         # datos, editar, eliminar (DialogoConfirmacion), marcar como adoptada
             └── formulario/                      # alta y edición (Reactive Forms), un solo componente
 
 .github/workflows/ci.yml    # job backend (nace en el Issue #7) y job frontend (se añade en el Issue #3)
@@ -182,6 +183,10 @@ frontend hay un único componente de formulario para crear y editar, con esta re
   cualquier otro error → "No se pudo completar la acción. Revisa tu conexión e inténtalo de
   nuevo." sin perder los datos del formulario.
 - **Confirmaciones** (FR-026): `NotificacionService.mostrar(texto)` con autocierre ~3 s.
+- **Confirmación de borrado** (FR-024, SC-005): componente propio `DialogoConfirmacion` (no
+  `window.confirm`) con el estilo de la app y botones "Cancelar" y "Sí, eliminar". Accesible:
+  `role="alertdialog"` con `aria-modal`, foco inicial en "Cancelar", foco atrapado dentro del
+  diálogo, cierre con Escape o clic en el fondo, y foco devuelto al botón "Eliminar" al cerrar.
 - **Diseño** (FR-031 a FR-033, principio III): mobile-first con Tailwind; listado
   `grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3`; controles con `min-h-11 min-w-11`
   (44 px); `focus-visible` en todo elemento interactivo; transiciones `duration-200`.

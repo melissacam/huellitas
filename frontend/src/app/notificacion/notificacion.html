@@ -1,0 +1,9 @@
+<!-- La región viva existe siempre para que los lectores de pantalla anuncien cada mensaje -->
+<div role="status" aria-live="polite" class="pointer-events-none fixed inset-x-0 bottom-6 z-50 flex justify-center px-4">
+  @if (notificacion.mensaje(); as mensaje) {
+    <p class="flex max-w-full items-center gap-2 rounded-full bg-menta px-5 py-3 font-bold text-tinta shadow-menta motion-safe:animate-aparecer">
+      <span aria-hidden="true" class="grid size-7 shrink-0 place-items-center rounded-full bg-white/70 text-sm">🐾</span>
+      {{ mensaje }}
+    </p>
+  }
+</div>

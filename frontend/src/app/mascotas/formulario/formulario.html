@@ -1,0 +1,203 @@
+<section aria-labelledby="titulo-formulario" class="mx-auto max-w-xl">
+  @if (noExiste()) {
+    <app-no-encontrada />
+  } @else if (cargando()) {
+    <p role="status" class="flex flex-col items-center gap-3 py-16 font-semibold text-tinta-suave">
+      <span aria-hidden="true" class="text-4xl motion-safe:animate-bounce">🐾</span>
+      Buscando la ficha…
+    </p>
+  } @else if (errorCarga()) {
+    <div role="alert" class="mx-auto max-w-lg rounded-3xl bg-rosa/50 p-6 text-center shadow-rosa">
+      <p class="text-3xl" aria-hidden="true">🙀</p>
+      <p class="mt-2 font-semibold">{{ errorCarga() }}</p>
+      <button
+        type="button"
+        (click)="cargar()"
+        class="mt-4 inline-flex min-h-11 items-center rounded-full bg-white px-6 font-bold shadow-rosa transition duration-200 ease-rebote hover:shadow-lg motion-safe:hover:-translate-y-0.5"
+      >
+        Reintentar
+      </button>
+    </div>
+  } @else {
+    <div class="flex items-center gap-4">
+      <span
+        aria-hidden="true"
+        [class]="[avatar().fondo, avatar().sombra]"
+        class="grid size-16 shrink-0 place-items-center rounded-full text-3xl transition duration-200 ease-rebote motion-safe:hover:-rotate-6"
+      >
+        {{ avatar().emoji }}
+      </span>
+      <div class="min-w-0">
+        <h1 id="titulo-formulario" class="text-3xl font-bold sm:text-4xl">
+          {{ esEdicion ? 'Editar ficha' : 'Registrar mascota' }}
+        </h1>
+        <p class="mt-1 truncate text-tinta-suave">
+          @if (esEdicion) {
+            Actualiza los datos de {{ nombreActual() }}.
+          } @else {
+            Cuéntanos sobre el nuevo integrante del refugio.
+          }
+        </p>
+      </div>
+    </div>
+
+    <form
+      [formGroup]="formulario"
+      (ngSubmit)="guardar()"
+      novalidate
+      [attr.aria-busy]="guardando()"
+      class="mt-8 flex flex-col gap-5 rounded-3xl bg-white p-5 shadow-durazno sm:p-8"
+    >
+      <!-- Nombre -->
+      <div class="flex flex-col gap-1">
+        <label for="campo-nombre" class="font-bold">Nombre</label>
+        <input
+          id="campo-nombre"
+          type="text"
+          formControlName="nombre"
+          autocomplete="off"
+          placeholder="Ej.: Luna"
+          [attr.aria-invalid]="mensaje('nombre') ? true : null"
+          [attr.aria-describedby]="mensaje('nombre') ? 'error-nombre' : null"
+          class="campo"
+        />
+        @if (mensaje('nombre'); as texto) {
+          <p id="error-nombre" class="mensaje-error"><span aria-hidden="true">⚠</span> {{ texto }}</p>
+        }
+      </div>
+
+      <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+        <!-- Especie -->
+        <div class="flex flex-col gap-1">
+          <label for="campo-especie" class="font-bold">Especie</label>
+          <select
+            id="campo-especie"
+            formControlName="especie"
+            [attr.aria-invalid]="mensaje('especie') ? true : null"
+            [attr.aria-describedby]="mensaje('especie') ? 'error-especie' : null"
+            class="campo"
+          >
+            <option value="" disabled>Elige una especie</option>
+            <option value="perro">{{ especies.perro.emoji }} Perro</option>
+            <option value="gato">{{ especies.gato.emoji }} Gato</option>
+            <option value="otro">{{ especies.otro.emoji }} Otro</option>
+          </select>
+          @if (mensaje('especie'); as texto) {
+            <p id="error-especie" class="mensaje-error"><span aria-hidden="true">⚠</span> {{ texto }}</p>
+          }
+        </div>
+
+        <!-- Edad -->
+        <div class="flex flex-col gap-1">
+          <label for="campo-edad" class="font-bold">
+            Edad <span class="font-semibold text-tinta-suave">(años)</span>
+          </label>
+          <input
+            id="campo-edad"
+            type="number"
+            inputmode="numeric"
+            min="0"
+            max="30"
+            step="1"
+            formControlName="edad"
+            placeholder="0 a 30"
+            [attr.aria-invalid]="mensaje('edad') ? true : null"
+            [attr.aria-describedby]="mensaje('edad') ? 'error-edad ayuda-edad' : 'ayuda-edad'"
+            class="campo"
+          />
+          <p id="ayuda-edad" class="text-sm text-tinta-suave">Usa 0 si tiene menos de un año.</p>
+          @if (mensaje('edad'); as texto) {
+            <p id="error-edad" class="mensaje-error"><span aria-hidden="true">⚠</span> {{ texto }}</p>
+          }
+        </div>
+      </div>
+
+      <!-- Estado: solo al editar; al registrar siempre se envía "disponible" -->
+      @if (esEdicion) {
+        <div class="flex flex-col gap-1">
+          <label for="campo-estado" class="font-bold">Estado</label>
+          <select
+            id="campo-estado"
+            formControlName="estado"
+            [attr.aria-invalid]="mensaje('estado') ? true : null"
+            [attr.aria-describedby]="mensaje('estado') ? 'error-estado ayuda-estado' : 'ayuda-estado'"
+            class="campo"
+          >
+            <option value="disponible">Disponible</option>
+            <option value="adoptado">Adoptado</option>
+          </select>
+          <p id="ayuda-estado" class="text-sm text-tinta-suave">
+            Si se marcó como adoptada por error, vuelve a elegir «Disponible».
+          </p>
+          @if (mensaje('estado'); as texto) {
+            <p id="error-estado" class="mensaje-error"><span aria-hidden="true">⚠</span> {{ texto }}</p>
+          }
+        </div>
+      }
+
+      <!-- Descripción -->
+      <div class="flex flex-col gap-1">
+        <div class="flex items-baseline justify-between gap-3">
+          <label for="campo-descripcion" class="font-bold">
+            Descripción <span class="font-semibold text-tinta-suave">(opcional)</span>
+          </label>
+          <span
+            id="contador-descripcion"
+            [class.text-alerta]="caracteres() > descripcionMax"
+            [class.text-tinta-suave]="caracteres() <= descripcionMax"
+            class="text-sm font-semibold tabular-nums"
+          >
+            {{ caracteres() }}/{{ descripcionMax }}
+          </span>
+        </div>
+        <textarea
+          id="campo-descripcion"
+          formControlName="descripcion"
+          rows="4"
+          placeholder="Carácter, cuidados especiales, lo que la hace única…"
+          [attr.aria-invalid]="mensaje('descripcion') ? true : null"
+          [attr.aria-describedby]="
+            mensaje('descripcion') ? 'error-descripcion contador-descripcion' : 'contador-descripcion'
+          "
+          class="campo resize-y py-2"
+        ></textarea>
+        @if (mensaje('descripcion'); as texto) {
+          <p id="error-descripcion" class="mensaje-error"><span aria-hidden="true">⚠</span> {{ texto }}</p>
+        }
+      </div>
+
+      @if (error()) {
+        <p role="alert" class="rounded-2xl bg-rosa/50 px-4 py-3 font-semibold">
+          <span aria-hidden="true">🙀</span> {{ error() }}
+        </p>
+      }
+
+      <div class="mt-2 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+        <a
+          [routerLink]="esEdicion ? ['/mascotas', id] : '/mascotas'"
+          class="inline-flex min-h-11 items-center justify-center rounded-full border-2 border-tinta/15 bg-white px-6 font-bold transition duration-200 ease-rebote hover:border-durazno hover:shadow-durazno motion-safe:hover:-translate-y-0.5"
+        >
+          Cancelar
+        </a>
+        <button
+          type="submit"
+          [disabled]="guardando()"
+          class="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-rosa px-8 font-bold text-tinta shadow-rosa transition duration-200 ease-rebote enabled:hover:shadow-lg enabled:motion-safe:hover:-translate-y-0.5 enabled:motion-safe:active:translate-y-0 disabled:cursor-wait disabled:opacity-70"
+        >
+          @if (guardando()) {
+            <span
+              aria-hidden="true"
+              class="size-4 rounded-full border-2 border-tinta/30 border-t-tinta motion-safe:animate-spin"
+            ></span>
+            Guardando…
+          } @else {
+            Guardar
+          }
+        </button>
+      </div>
+      @if (guardando()) {
+        <p role="status" class="sr-only">Guardando la ficha…</p>
+      }
+    </form>
+  }
+</section>
